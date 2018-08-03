@@ -8,9 +8,7 @@ import java.util.*;
 import javax.swing.*;
 import java.awt.event.KeyEvent;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
+
 
 
 //by Gustaf Matsson
@@ -28,26 +26,78 @@ public class PlayingCardGameDisplay extends JComponent implements MouseListener{
     private int selectedCol = -1;
     private PlayingCardGame game;
 
-    //TODO
-    // Försök till en meny
-    /*JMenuBar menuBar = new JMenuBar();
-    JMenu menu = new JMenu("Menu");
-    menuBar.add(menu);
-    JMenuItem newMenuItem = new JMenuItem("New Game", KeyEvent.VK_N);
-    menu.add(newMenuItem);
 
-    frame.setJMenuBar(menuBar); */
+
+
 
     public PlayingCardGameDisplay(PlayingCardGame game) {
         this.game = game;
         frame = new JFrame("Solitaire");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.getContentPane().add(this);
         this.setPreferredSize(new Dimension(CARD_WIDTH * 7 + SPACING * 8, CARD_HEIGHT * 2 + SPACING * 3 + FACE_DOWN_OFFSET * 7 + 13 * FACE_UP_OFFSET));
         this.addMouseListener(this);
-
+        createMenu();
         frame.pack();
         frame.setVisible(true);
+    }
+    public void createMenu() {
+
+        JMenuBar menubar = new JMenuBar();
+        JMenu menu = new JMenu("Menu");
+        JMenuItem newGame = new JMenuItem("New game");
+        JMenuItem rules = new JMenuItem("Game rules");
+        JMenuItem highscore = new JMenuItem("HIghscore");
+        menu.add(newGame);
+        menu.add(rules);
+        menu.add(highscore);
+        menubar.add(menu);
+        frame.setJMenuBar(menubar);
+        
+        newGame.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+               game = new PlayingCardGame();
+
+            }
+        });
+        rules.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                JOptionPane.showMessageDialog(frame, "Solitaire typically involve dealing cards from a " +
+                        "shuffled deck into a prescribed arrangement on a tabletop, \n" +
+                        "from which the player attempts to reorder the deck by suit and rank through \n" +
+                        "a series of moves transferring cards from one place to another under prescribed restrictions. \n" +
+                        "Some games allow for the reshuffling of the deck(s), and/or the placement of cards into new or \"empty\" locations.\n" +
+                        " In the most familiar, general form of Patience, the object of the game is to build up four blocks of cards \n" +
+                        "going from ace to king in each suit, taking cards from the layout if they appear on the table.\n" +
+                        "Source: Wikipedia");
+
+            }
+        });
+        highscore.addActionListener (new ActionListener() {
+            public void actionPerformed(ActionEvent arg0) {
+                BufferedReader br = null;
+                try {
+                    br = new BufferedReader(new FileReader("highscore.txt"));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String aLineFromFile = null;
+                String input = "";
+                try {
+                    while ((aLineFromFile = br.readLine()) != null) {
+                        input += aLineFromFile + "\n";
+                    }
+                    JOptionPane.showMessageDialog(frame, input, "Highscore",1);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -104,6 +154,9 @@ public class PlayingCardGameDisplay extends JComponent implements MouseListener{
 
     @Override
     public void mouseClicked(MouseEvent e) {
+        if(game.winCheck()) {
+            displayWin();
+        }
         int col = e.getX() / (SPACING + CARD_WIDTH);
         int row = e.getY() / (SPACING + CARD_HEIGHT);
         if (row > 1)
@@ -172,4 +225,16 @@ public class PlayingCardGameDisplay extends JComponent implements MouseListener{
         selectedRow = 1;
         selectedCol = index;
     }
+    private void displayWin()  {
+        PrintWriter highscoreFile = null;
+        try {
+            highscoreFile = new PrintWriter("highscore.txt");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String winner = JOptionPane.showInputDialog("You Win!!! \n Enter your name: ");
+        highscoreFile.println(winner + " " + game.score);
+        highscoreFile.close();
+    }
+
 }

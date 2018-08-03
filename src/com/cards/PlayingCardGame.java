@@ -5,10 +5,9 @@ import java.util.*;
 //by Gustaf Matsson
 //2018-07-30
 public class PlayingCardGame {
+
     public static void main(String[] args) {
         new PlayingCardGame();
-
-
     }
 
     private PlayingCardDeck pcd;
@@ -17,6 +16,7 @@ public class PlayingCardGame {
     private Stack<PlayingCard>[] foundation; // Dom 4 högarna
     private Stack<PlayingCard>[] piles; // Dom 7 högarna som spelas på
     private PlayingCardGameDisplay display;
+    public int score;
 
     public PlayingCardGame() {
         pcd = new PlayingCardDeck();
@@ -27,6 +27,7 @@ public class PlayingCardGame {
         stock = new Stack<PlayingCard>();
         waste = new Stack<PlayingCard>();
         display = new PlayingCardGameDisplay(this);
+        score = 0;
 
         for (int i = 0; i < foundation.length; i++) {
             foundation[i] = new Stack();
@@ -144,6 +145,7 @@ public class PlayingCardGame {
             if (canAddToFoundation(selectedPile.peek(), index)) {
                 PlayingCard temp = selectedPile.pop();
                 foundation[index].push(temp);
+                score += 15;
                 if (! selectedPile.isEmpty()) selectedPile.peek().setFaceUp();
                     display.unselect();
             }
@@ -159,6 +161,7 @@ public class PlayingCardGame {
             if (canAddToPile(temp, index)) {
                 piles[index].push(waste.pop());
                 piles[index].peek().setFaceUp();
+                score += 5;
             }
             display.unselect();
             display.selectPile(index);
@@ -168,8 +171,12 @@ public class PlayingCardGame {
             if (index != oldPile) {
                 Stack<PlayingCard> temp = removeFaceUpCards(oldPile);
                 if (canAddToPile(temp.peek(), index)) {
-                    addToPile(temp, index);if (!piles[oldPile].isEmpty()) piles[oldPile].peek().setFaceUp();
-                    display.unselect();
+                    addToPile(temp, index);
+                    score -= 3;
+                    if(!piles[oldPile].isEmpty()) {
+                        piles[oldPile].peek().setFaceUp();
+                        display.unselect();
+                    }
                 }
                 else {
                     addToPile(temp, oldPile);
@@ -183,6 +190,7 @@ public class PlayingCardGame {
         else {
             display.selectPile(index);
             piles[index].peek().setFaceUp();
+            score += 5;
         }
     }
     public PlayingCard getStockCard() {
@@ -202,6 +210,14 @@ public class PlayingCardGame {
 
     public Stack<PlayingCard> getPile(int index) {
         return piles[index];
+    }
+
+    public boolean winCheck() {
+        for (int i = 0; i < 4 ; i++) {
+            if(!(foundation[i].size() == 13))
+                return false;
+        }
+        return true;
     }
 }
 

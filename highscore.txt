@@ -1,0 +1,3 @@
+Highscore:
+Gustaf 0
+Gustaf 1337
